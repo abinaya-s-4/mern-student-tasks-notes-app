@@ -1,14 +1,14 @@
 const express = require('express');
-const router = express.Router();
 const Note = require('../models/Note');
 const auth = require('../middleware/authMiddleware');
 
-// CREATE note
+const router = express.Router();
+
+// Create
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, content } = req.body;
-    const note = new Note({ user: req.user, title, content });
-    await note.save();
+    const { title, content, subject } = req.body;
+    const note = await Note.create({ user: req.user, title, content, subject });
     res.status(201).json(note);
   } catch (err) {
     console.error('Create note error:', err);
@@ -16,7 +16,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// READ all notes for this user
+// Get all
 router.get('/', auth, async (req, res) => {
   try {
     const notes = await Note.find({ user: req.user });
@@ -27,16 +27,17 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// UPDATE note
+// Update
 router.put('/:id', auth, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
+    if (note.user.toString() !== req.user) return res.status(401).json({ message: 'Not authorized' });
+
     note.title = req.body.title || note.title;
     note.content = req.body.content || note.content;
+    note.subject = req.body.subject || note.subject;
+
     await note.save();
     res.json(note);
   } catch (err) {
@@ -45,14 +46,13 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// DELETE note
+// Delete
 router.delete('/:id', auth, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user) {
-      return res.status(401).json({ message: 'Not authorized' });
-    }
+    if (note.user.toString() !== req.user) return res.status(401).json({ message: 'Not authorized' });
+
     await note.deleteOne();
     res.json({ message: 'Note removed' });
   } catch (err) {

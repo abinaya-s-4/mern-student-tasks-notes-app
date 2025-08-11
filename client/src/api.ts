@@ -1,5 +1,4 @@
-// src/api.ts
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -18,7 +17,7 @@ export async function apiRequest<T>(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || "API Error");
+    throw new Error(text || "API request failed");
   }
   return res.json();
 }
