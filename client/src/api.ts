@@ -14,11 +14,13 @@ export async function apiRequest<T>(
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include", // allow cookies/auth if used
   });
+if (!res.ok) {
+   const errorData = await res.json().catch(() => null);
+   if (errorData && errorData.message) throw new Error(errorData.message);
+   const text = await res.text();
+   throw new Error(text || "API request failed");
+}
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "API request failed");
-  }
 
   return res.json() as Promise<T>;
 }
