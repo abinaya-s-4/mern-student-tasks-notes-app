@@ -11,9 +11,13 @@ const app = express();
 
 // Allow CORS for your frontend URL (local dev or live)
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
+  origin: [
+    process.env.FRONTEND_URL, // deployed frontend
+    'http://localhost:5173'   // dev frontend
+  ].filter(Boolean),
+  credentials: true
 }));
+
 app.use(express.json());
 
 // Connect to MongoDB
