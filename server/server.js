@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -9,22 +10,22 @@ const summaryRoutes = require('./routes/summaryRoutes');
 
 const app = express();
 
-// 🔹 Hardcode your deployed frontend URL here
-const FRONTEND_URL = "https://mern-student-tasks-notes-app-ege3-rob1vwfiv.vercel.app";
+// Permanent production frontend URL (stable)
+const FRONTEND_URL = "https://mern-student-tasks-notes-app-ege3.vercel.app";
 
-// ✅ CORS config - only allow production frontend
+// CORS config for production
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true
 }));
 
-// Extra: handle OPTIONS preflight for all routes
+// Handle preflight requests
 app.options('*', cors({
   origin: FRONTEND_URL,
   credentials: true
 }));
 
-// Extra: ensure all responses include CORS headers (even errors)
+// Force CORS headers on all responses
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', FRONTEND_URL);
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -33,27 +34,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Parse JSON bodies
+// Parse JSON
 app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error(err);
     process.exit(1);
   });
 
-// Routes
+// API routes
 app.get('/', (req, res) => res.send('API running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/summary', summaryRoutes);
 
-// Export for Vercel
+// Export for serverless
 module.exports = app;
 
-// Local run (optional, will be ignored in production)
+// Local run (optional)
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

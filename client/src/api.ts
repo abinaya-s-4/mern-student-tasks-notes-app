@@ -1,7 +1,5 @@
 // src/api.ts
-
-// 🔹 Directly use your deployed backend API URL — no localhost or ENV fallback
-const API_BASE_URL = "https://mern-student-tasks-notes-nckm6lver-abinaya-s-4s-projects.vercel.app/api";
+const API_BASE_URL = "https://mern-student-tasks-notes-app.vercel.app/api";
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -9,7 +7,6 @@ export async function apiRequest<T>(
   body?: any,
   token?: string
 ): Promise<T> {
-  // Prevent double slashes in final URL
   const separator = API_BASE_URL.endsWith('/') ? '' : '/';
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
   const url = `${API_BASE_URL}${separator}${cleanEndpoint}`;
@@ -21,26 +18,23 @@ export async function apiRequest<T>(
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
     body: body ? JSON.stringify(body) : undefined,
-    credentials: "include", // allow cookies/auth if used
+    credentials: "include",
   });
 
-  // ✅ Read the body only once
+  // Read body once
   const contentType = res.headers.get("content-type") || "";
   let data: any;
 
   if (contentType.includes("application/json")) {
-    // Try to parse JSON
     try {
       data = await res.json();
     } catch {
       data = null;
     }
   } else {
-    // Fallback to text for non-JSON responses
     data = await res.text();
   }
 
-  // If HTTP status is an error, throw with parsed message if possible
   if (!res.ok) {
     const message =
       data && typeof data === "object"
