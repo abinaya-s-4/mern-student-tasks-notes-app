@@ -1,6 +1,7 @@
 // src/api.ts
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+// 🔹 Directly use your deployed backend API URL — no localhost or ENV fallback
+const API_BASE_URL = "https://mern-student-tasks-notes-nckm6lver-abinaya-s-4s-projects.vercel.app/api";
 
 export async function apiRequest<T>(
   endpoint: string,
