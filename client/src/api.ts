@@ -1,3 +1,5 @@
+// src/api.ts
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export async function apiRequest<T>(
@@ -6,7 +8,7 @@ export async function apiRequest<T>(
   body?: any,
   token?: string
 ): Promise<T> {
-  // Normalize URL concatenation to avoid double slashes
+  // Prevent double slashes in final URL
   const separator = API_BASE_URL.endsWith('/') ? '' : '/';
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
   const url = `${API_BASE_URL}${separator}${cleanEndpoint}`;
@@ -21,12 +23,30 @@ export async function apiRequest<T>(
     credentials: "include", // allow cookies/auth if used
   });
 
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => null);
-    if (errorData && errorData.message) throw new Error(errorData.message);
-    const text = await res.text();
-    throw new Error(text || "API request failed");
+  // ✅ Read the body only once
+  const contentType = res.headers.get("content-type") || "";
+  let data: any;
+
+  if (contentType.includes("application/json")) {
+    // Try to parse JSON
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
+  } else {
+    // Fallback to text for non-JSON responses
+    data = await res.text();
   }
 
-  return res.json() as Promise<T>;
+  // If HTTP status is an error, throw with parsed message if possible
+  if (!res.ok) {
+    const message =
+      data && typeof data === "object"
+        ? data.message || JSON.stringify(data)
+        : data;
+    throw new Error(message || "API request failed");
+  }
+
+  return data as T;
 }
