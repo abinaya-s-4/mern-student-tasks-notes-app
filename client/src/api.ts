@@ -1,5 +1,5 @@
 // src/api.ts
-const API_BASE_URL = "https://mern-student-tasks-notes-app.vercel.app/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export async function apiRequest<T>(
   endpoint: string,
@@ -21,7 +21,6 @@ export async function apiRequest<T>(
     credentials: "include",
   });
 
-  // Read body once
   const contentType = res.headers.get("content-type") || "";
   let data: any;
 
