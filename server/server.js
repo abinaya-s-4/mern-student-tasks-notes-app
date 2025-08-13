@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 console.log('HF_API_KEY:', process.env.HF_API_KEY ? 'Loaded' : 'Missing');
 console.log('MONGO_URI:', process.env.MONGO_URI ? 'Loaded' : 'Missing');
@@ -6,31 +7,28 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-// Import routes
+// Import route modules
 const authRoutes = require('./routes/authRouters');
 const noteRoutes = require('./routes/noteRoutes');
 const summaryRoutes = require('./routes/summaryRoutes');
 
 const app = express();
 
-// Load frontend URL from env or fallback
-const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+// ✅ Config
+const FRONTEND_URL = process.env.FRONTEND_URL;
+if (!FRONTEND_URL) {
+  console.warn('⚠ FRONTEND_URL not set. Using "*" for CORS (development only)');
+}
 
-// Main CORS config
+// ✅ CORS
 app.use(cors({
-  origin: FRONTEND_URL === '*' ? true : FRONTEND_URL,
+  origin: FRONTEND_URL || '*',
   credentials: true
 }));
+app.options('*', cors({ origin: FRONTEND_URL || '*', credentials: true }));
 
-// Handle preflight
-app.options('*', cors({
-  origin: FRONTEND_URL === '*' ? true : FRONTEND_URL,
-  credentials: true
-}));
-
-// Force CORS headers for all responses
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND_URL === '*' ? '*' : FRONTEND_URL);
+  res.header('Access-Control-Allow-Origin', FRONTEND_URL || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header(
@@ -40,30 +38,32 @@ app.use((req, res, next) => {
   next();
 });
 
-// Parse JSON
+// ✅ Body parser
 app.use(express.json());
 
-// Connect to MongoDB
+// ✅ Database
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1);
-  });
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+  process.exit(1);
+});
 
-// Routes
+// ✅ API routes
 app.get('/', (req, res) => res.send('API running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/summary', summaryRoutes);
 
-// Export for Vercel
+// ⚠ No bare "*" wildcard here (Express 5 change). If you need SPA fallback:
+// app.get('/{*any}', (req, res) => { res.status(404).send('Not Found'); });
+
 module.exports = app;
 
-// Run locally
+// ✅ Local dev
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

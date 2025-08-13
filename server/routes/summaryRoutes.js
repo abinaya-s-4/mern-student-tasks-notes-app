@@ -1,5 +1,6 @@
+// routes/summaryRoutes.js
 const express = require('express');
-const fetch = require('node-fetch'); // npm install node-fetch
+const fetch = require('node-fetch');
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -31,8 +32,6 @@ router.post('/', auth, async (req, res) => {
     }
 
     const data = await response.json();
-    console.log('HF API raw response:', data); // debug
-
     const summary = data[0]?.summary_text?.trim() || '';
     if (!summary) {
       return res.status(500).json({ message: 'No summary generated' });

@@ -1,10 +1,11 @@
+// routes/noteRoutes.js
 const express = require('express');
 const Note = require('../models/Note');
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Create
+// Create note
 router.post('/', auth, async (req, res) => {
   try {
     const { title, content, subject } = req.body;
@@ -16,7 +17,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Get all
+// Get all notes
 router.get('/', auth, async (req, res) => {
   try {
     const notes = await Note.find({ user: req.user });
@@ -27,16 +28,16 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Update
+// Update note
 router.put('/:id', auth, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
     if (note.user.toString() !== req.user) return res.status(401).json({ message: 'Not authorized' });
 
-    note.title = req.body.title || note.title;
-    note.content = req.body.content || note.content;
-    note.subject = req.body.subject || note.subject;
+    note.title = req.body.title ?? note.title;
+    note.content = req.body.content ?? note.content;
+    note.subject = req.body.subject ?? note.subject;
 
     await note.save();
     res.json(note);
@@ -46,7 +47,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete
+// Delete note
 router.delete('/:id', auth, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
