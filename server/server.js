@@ -1,4 +1,7 @@
 require('dotenv').config();
+console.log('HF_API_KEY:', process.env.HF_API_KEY ? 'Loaded' : 'Missing');
+console.log('MONGO_URI:', process.env.MONGO_URI ? 'Loaded' : 'Missing');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
